@@ -105,3 +105,69 @@ exports.deletePlant = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// POST /plants/:id/water - mark plant as watered today
+// This is called when user clicks "Water Now" button
+exports.markAsWatered = async (req, res) => {
+  try {
+    // First, find the plant and make sure it belongs to the logged-in user
+    const plant = await Plant.findOne({ _id: req.params.id, user: req.userId });
+    if (!plant) return res.status(404).json({ message: 'Plant not found' });
+
+    // Update the last watered date to right now
+    plant.lastWateredDate = new Date();
+
+    // Calculate when to water next by adding the frequency days
+    plant.nextWateringDate = addDays(plant.lastWateredDate, plant.wateringFrequencyDays);
+
+    // Save the updated plant to database
+    await plant.save();
+
+    // Create an activity log so we can track this watering event
+    const Activity = require('../models/Activity');
+    await Activity.create({
+      user: req.userId,
+      plant: plant._id,
+      type: 'watered',
+      note: 'Plant watered manually'
+    });
+
+    // Send back the updated plant data
+    res.json(plant);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// POST /plants/:id/fertilize - mark plant as fertilized today
+// This is called when user clicks "Fertilize Now" button
+exports.markAsFertilized = async (req, res) => {
+  try {
+    // First, find the plant and make sure it belongs to the logged-in user
+    const plant = await Plant.findOne({ _id: req.params.id, user: req.userId });
+    if (!plant) return res.status(404).json({ message: 'Plant not found' });
+
+    // Update the last fertilized date to right now
+    plant.lastFertilizedDate = new Date();
+
+    // Calculate when to fertilize next by adding the frequency days
+    plant.nextFertilizingDate = addDays(plant.lastFertilizedDate, plant.fertilizingFrequencyDays);
+
+    // Save the updated plant to database
+    await plant.save();
+
+    // Create an activity log so we can track this fertilizing event
+    const Activity = require('../models/Activity');
+    await Activity.create({
+      user: req.userId,
+      plant: plant._id,
+      type: 'fertilized',
+      note: 'Plant fertilized manually'
+    });
+
+    // Send back the updated plant data
+    res.json(plant);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
