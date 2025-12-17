@@ -5,6 +5,9 @@ import Dashboard from './pages/Dashboard';
 import Product from './pages/Product';
 import AddPlant from './pages/AddPlant';
 import Register from './pages/Register';
+import Login from './pages/Login';
+import EditPlant from './pages/EditPlant';
+import Activities from './pages/Activity';
 
 // define routes
 const router = createBrowserRouter([
@@ -15,7 +18,10 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: 'product/:id', element: <Product /> },
       { path: 'add', element: <AddPlant /> },
-      { path: 'register', element: <Register /> }
+      { path: 'edit/:id', element: <EditPlant /> },
+      { path: 'register', element: <Register /> },
+      { path: 'login', element: <Login /> },
+      { path: 'activities', element: <Activities /> }
     ]
   }
 ]);
