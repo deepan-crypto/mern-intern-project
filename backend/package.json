@@ -1,18 +1,19 @@
 {
-  "name": "mern-intern-project-backend",
-  "version": "1.0.0",
-  "description": "backend for mern intern",
-  "main": "index.js",
+  "name": "mern-intern-backend",
+  "version": "0.1.0",
+  "private": true,
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
-  "author": "deepan 24CS043",
-  "license": "ISC",
   "dependencies": {
-    "bcrypt": "^6.0.0",
+    "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
-    "express": "^5.2.1",
-    "mongoose": "^9.0.1",
-    "nodemon": "^3.1.11"
+    "express": "^4.18.2",
+    "mongoose": "^7.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
   }
 }
