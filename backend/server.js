@@ -1,7 +1,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const cron = require('node-cron');
+
+// try to load node-cron, but don't crash if it's not installed
+let cron = null;
+try {
+  cron = require('node-cron'); // used for scheduled checks
+} catch (err) {
+  console.warn('node-cron not installed — falling back to setInterval. Run `cd backend && npm install` to add node-cron.');
+}
 
 const app = express();
 app.use(express.json());
@@ -29,20 +36,17 @@ app.get('/', (req, res) => {
   res.send('Simple MERN backend with cron job');
 });
 
-// simple cron job - runs every minute (for dev); it looks for overdue tasks and logs an activity.
-// in production this schedule could be daily.
+// simple cron-like job that checks overdue tasks
 const Plant = require('./models/Plant');
 const Activity = require('./models/Activity');
 
-cron.schedule('* * * * *', async () => {
+async function checkOverdue() {
   try {
-    console.log('Cron: checking overdue tasks');
+    console.log('Cron/Fallback: checking overdue tasks');
     const now = new Date();
 
-    // find plants with next watering date in past
     const overdueWater = await Plant.find({ nextWateringDate: { $lt: now } });
     for (const p of overdueWater) {
-      // check if we already added overdue today
       const start = new Date();
       start.setHours(0,0,0,0);
       const existing = await Activity.findOne({
@@ -55,7 +59,6 @@ cron.schedule('* * * * *', async () => {
       }
     }
 
-    // find plants with next fertilizing date in past
     const overdueFert = await Plant.find({ nextFertilizingDate: { $lt: now } });
     for (const p of overdueFert) {
       const start = new Date();
@@ -70,9 +73,18 @@ cron.schedule('* * * * *', async () => {
       }
     }
   } catch (err) {
-    console.error('Cron error', err);
+    console.error('Cron/Fallback error', err);
   }
-});
+}
+
+// schedule the checking function using node-cron if available, otherwise use setInterval as fallback
+if (cron && typeof cron.schedule === 'function') {
+  // every minute for dev (in production you could change to daily)
+  cron.schedule('* * * * *', checkOverdue);
+} else {
+  // fallback: run every minute
+  setInterval(checkOverdue, 60 * 1000);
+}
 
 // start server
 const PORT = process.env.PORT || 5000;
