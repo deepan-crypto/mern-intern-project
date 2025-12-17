@@ -16,14 +16,16 @@ export default function Register() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
-    }).then(res => {
-      if (res.ok) {
-        alert('Registered successfully');
-        window.location = '/';
-      } else {
-        res.json().then(d => alert(d.message || 'Registration failed'));
-      }
-    }).catch(err => console.error('Register error', err));
+    }).then(res => res.json())
+      .then(d => {
+        if (d.token) {
+          // store token and go to dashboard
+          localStorage.setItem('token', d.token);
+          window.location = '/';
+        } else {
+          alert(d.message || 'Registration failed');
+        }
+      }).catch(err => console.error('Register error', err));
   };
 
   return (
