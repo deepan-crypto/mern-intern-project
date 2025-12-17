@@ -1,6 +1,5 @@
 # mern-intern-project
 
-<<<<<<< HEAD
 ## Frontend
 
 To set up the frontend:
@@ -15,8 +14,8 @@ To set up the backend:
 2. npm install
 3. npm run dev
 
+Note: If you see an error like "Cannot find module 'node-cron'", run `cd backend && npm install` (this will install node-cron and other backend deps).
+
 Notes:
 - Backend runs on port 5000 by default
 - Make sure MongoDB is running locally or set MONGO_URI in environment
-=======
->>>>>>> 196e3f54afe3d780e137c2008609dd3acb05a9a2
