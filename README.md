@@ -1,8 +1,2 @@
 # mern-intern-project
 
-## Frontend
-
-To set up the frontend:
-1. cd frontend
-2. npm install
-3. npm run dev
