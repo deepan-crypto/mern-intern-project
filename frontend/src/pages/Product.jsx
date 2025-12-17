@@ -38,8 +38,19 @@ export default function Product() {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
-      .then(data => setActivities(data))
-      .catch(err => console.error('Error fetching activities:', err));
+      .then(data => {
+        // Make sure data is an array before setting activities
+        if (Array.isArray(data)) {
+          setActivities(data);
+        } else {
+          console.error('Activities data is not an array:', data);
+          setActivities([]);
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching activities:', err);
+        setActivities([]); // ensure it's an array on error
+      });
   }, [id, token]);
 
   // WATER NOW - Mark plant as watered
@@ -62,7 +73,12 @@ export default function Product() {
           headers: { Authorization: `Bearer ${token}` }
         });
         const actData = await actRes.json();
-        setActivities(actData);
+        // Safety check: make sure actData is an array
+        if (Array.isArray(actData)) {
+          setActivities(actData);
+        } else {
+          console.error('Activities reload failed, not an array');
+        }
 
         alert('✓ Plant watered successfully!');
       }
@@ -93,7 +109,12 @@ export default function Product() {
           headers: { Authorization: `Bearer ${token}` }
         });
         const actData = await actRes.json();
-        setActivities(actData);
+        // Safety check: make sure actData is an array
+        if (Array.isArray(actData)) {
+          setActivities(actData);
+        } else {
+          console.error('Activities reload failed, not an array');
+        }
 
         alert('✓ Plant fertilized successfully!');
       }
@@ -235,7 +256,8 @@ export default function Product() {
       {/* ACTIVITY HISTORY */}
       <div className="card">
         <h3>📊 Activity History</h3>
-        {activities.length === 0 ? (
+        {/* Safety check: make sure activities is an array before checking length or mapping */}
+        {!Array.isArray(activities) || activities.length === 0 ? (
           <p style={{ color: 'var(--text-light)' }}>No activities recorded yet.</p>
         ) : (
           <ul className="activity-list">

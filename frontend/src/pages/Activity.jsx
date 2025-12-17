@@ -22,17 +22,26 @@ export default function Activity() {
     })
       .then(res => res.json())
       .then(data => {
-        setActivities(data);
+        // Make sure data is an array before setting it
+        // If backend returns an error, it might be an object like { message: "error" }
+        if (Array.isArray(data)) {
+          setActivities(data);
+        } else {
+          console.error('Activities data is not an array:', data);
+          setActivities([]); // set empty array if error
+        }
         setLoading(false);
       })
       .catch(err => {
         console.error('Error loading activities:', err);
+        setActivities([]); // make sure it's an array even on error
         setLoading(false);
       });
   }, [token]);
 
   // Filter activities based on selected plant and type
-  const filteredActivities = activities.filter(activity => {
+  // Safety check: make sure activities is an array before filtering
+  const filteredActivities = Array.isArray(activities) ? activities.filter(activity => {
     // Filter by plant
     if (selectedPlant !== 'all' && activity.plant && activity.plant._id !== selectedPlant) {
       return false;
@@ -44,7 +53,7 @@ export default function Activity() {
     }
 
     return true;
-  });
+  }) : [];
 
   // Show loading spinner
   if (loading) {
@@ -71,7 +80,8 @@ export default function Activity() {
               onChange={(e) => setSelectedPlant(e.target.value)}
             >
               <option value="all">All Plants</option>
-              {plants.map(plant => (
+              {/* Safety check: make sure plants is an array before mapping */}
+              {Array.isArray(plants) && plants.map(plant => (
                 <option key={plant._id} value={plant._id}>
                   {plant.name}
                 </option>
@@ -101,7 +111,7 @@ export default function Activity() {
         <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
           <h3>No activities found</h3>
           <p style={{ color: 'var(--text-light)' }}>
-            {activities.length === 0
+            {!Array.isArray(activities) || activities.length === 0
               ? "You haven't recorded any activities yet. Start watering your plants!"
               : "No activities match your filters. Try changing the filter settings."}
           </p>
