@@ -1,64 +1,162 @@
-import React, { useEffect, useState } from 'react';
+// ACTIVITY HISTORY PAGE
+// This shows all watering and fertilizing activities for the user's plants
+import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 
-export default function Activities() {
-  const { plants, token } = useOutletContext();
-  const [activities, setActivities] = useState([]);
-  const [filterPlant, setFilterPlant] = useState('');
-  const [filterType, setFilterType] = useState('');
+export default function Activity() {
+  const { token, plants } = useOutletContext();
 
+  // Store activities and filter settings in state
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedPlant, setSelectedPlant] = useState('all'); // filter by plant
+  const [selectedType, setSelectedType] = useState('all'); // filter by type
+
+  // Load all activities when page loads
   useEffect(() => {
     if (!token) return;
-    let url = 'http://localhost:5000/api/activities';
-    const params = [];
-    if (filterPlant) params.push(`plantId=${filterPlant}`);
-    if (filterType) params.push(`type=${filterType}`);
-    if (params.length) url += '?' + params.join('&');
 
-    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(data => setActivities(data))
-      .catch(() => {});
-  }, [token, filterPlant, filterType]);
+    // Fetch all activities for this user
+    fetch('http://localhost:5000/api/activities', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setActivities(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error loading activities:', err);
+        setLoading(false);
+      });
+  }, [token]);
+
+  // Filter activities based on selected plant and type
+  const filteredActivities = activities.filter(activity => {
+    // Filter by plant
+    if (selectedPlant !== 'all' && activity.plant && activity.plant._id !== selectedPlant) {
+      return false;
+    }
+
+    // Filter by type (watered, fertilized, etc.)
+    if (selectedType !== 'all' && activity.type !== selectedType) {
+      return false;
+    }
+
+    return true;
+  });
+
+  // Show loading spinner
+  if (loading) {
+    return (
+      <div className="container">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h2>Activities</h2>
+    <div className="container fade-in">
+      <h2>📊 Activity History</h2>
 
-      <div style={{ marginBottom: 12 }}>
-        <label>Filter by plant:
-          <select onChange={e => setFilterPlant(e.target.value)} value={filterPlant}>
-            <option value="">All</option>
-            {plants.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
-          </select>
-        </label>
+      {/* FILTER SECTION */}
+      <div className="filter-section">
+        <h3>Filters</h3>
+        <div className="filter-grid">
+          {/* Filter by Plant */}
+          <div className="form-group">
+            <label>Filter by Plant</label>
+            <select
+              value={selectedPlant}
+              onChange={(e) => setSelectedPlant(e.target.value)}
+            >
+              <option value="all">All Plants</option>
+              {plants.map(plant => (
+                <option key={plant._id} value={plant._id}>
+                  {plant.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <label style={{ marginLeft: 12 }}>Filter by type:
-          <select onChange={e => setFilterType(e.target.value)} value={filterType}>
-            <option value="">All</option>
-            <option value="watered">watered</option>
-            <option value="fertilized">fertilized</option>
-            <option value="overdue_watering">overdue_watering</option>
-            <option value="overdue_fertilizing">overdue_fertilizing</option>
-          </select>
-        </label>
+          {/* Filter by Activity Type */}
+          <div className="form-group">
+            <label>Filter by Type</label>
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+            >
+              <option value="all">All Types</option>
+              <option value="watered">Watered</option>
+              <option value="fertilized">Fertilized</option>
+              <option value="overdue_watering">Overdue Watering</option>
+              <option value="overdue_fertilizing">Overdue Fertilizing</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      <table className="table">
-        <thead>
-          <tr><th>Plant</th><th>Type</th><th>Date</th><th>Note</th></tr>
-        </thead>
-        <tbody>
-          {activities.map(a => (
-            <tr key={a._id}>
-              <td>{a.plant ? (plants.find(p => p._id === a.plant)?.name || 'plant') : '—'}</td>
-              <td>{a.type}</td>
-              <td>{new Date(a.date).toLocaleString()}</td>
-              <td>{a.note || ''}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* ACTIVITY LIST */}
+      {filteredActivities.length === 0 ? (
+        <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
+          <h3>No activities found</h3>
+          <p style={{ color: 'var(--text-light)' }}>
+            {activities.length === 0
+              ? "You haven't recorded any activities yet. Start watering your plants!"
+              : "No activities match your filters. Try changing the filter settings."}
+          </p>
+        </div>
+      ) : (
+        <div>
+          <p style={{ color: 'var(--text-light)', marginBottom: '1rem' }}>
+            Showing {filteredActivities.length} of {activities.length} activities
+          </p>
+
+          <ul className="activity-list">
+            {filteredActivities.map(activity => {
+              // Choose icon based on activity type
+              let icon = '•';
+              let color = 'var(--primary-green)';
+
+              if (activity.type === 'watered') {
+                icon = '💧';
+                color = '#3498db';
+              } else if (activity.type === 'fertilized') {
+                icon = '🌱';
+                color = '#f39c12';
+              } else if (activity.type.includes('overdue')) {
+                icon = '⚠️';
+                color = '#e74c3c';
+              }
+
+              return (
+                <li
+                  key={activity._id}
+                  className="activity-item"
+                  style={{ borderLeftColor: color }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div className="activity-type" style={{ color }}>
+                        {icon} {activity.type.replace(/_/g, ' ').toUpperCase()}
+                      </div>
+                      <div style={{ fontWeight: '600', marginTop: '0.3rem' }}>
+                        {activity.plant && activity.plant.name ? activity.plant.name : 'Unknown Plant'}
+                      </div>
+                      {activity.note && (
+                        <div className="activity-note">{activity.note}</div>
+                      )}
+                    </div>
+                    <div className="activity-date">
+                      {new Date(activity.date).toLocaleString()}
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
