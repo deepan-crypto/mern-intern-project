@@ -10,4 +10,8 @@ router.post('/plants', auth, plantController.addPlant);
 router.put('/plants/:id', auth, plantController.updatePlant);
 router.delete('/plants/:id', auth, plantController.deletePlant);
 
+// mark plant as watered or fertilized (new endpoints!)
+router.post('/plants/:id/water', auth, plantController.markAsWatered);
+router.post('/plants/:id/fertilize', auth, plantController.markAsFertilized);
+
 module.exports = router;
