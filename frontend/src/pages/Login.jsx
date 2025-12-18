@@ -1,86 +1,88 @@
 // LOGIN PAGE
-// This is where users login to their account
+// This is where users can sign in to their account
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, NavLink } from 'react-router-dom';
 
 export default function Login() {
-  // useState is a React hook that lets us store data
-  // Here we store email, password, error message, and loading state
+  const navigate = useNavigate();
+
+  // Store form data in state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  // This function runs when user clicks Login button
+  // Handle form submission
   const handleSubmit = async (e) => {
-    e.preventDefault(); // stop page from reloading
-    setError(''); // clear any old errors
-    setLoading(true); // show loading state
+    e.preventDefault();
+    setSubmitting(true);
+    setError('');
+
+    // Prepare login data
+    const data = { email, password };
 
     try {
-      // Send login request to backend API
+      // Send login request to backend
       const response = await fetch('http://localhost:5000/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }) // send email and password
+        body: JSON.stringify(data)
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
-      if (data.token) {
-        // Login successful! Save token to browser
-        localStorage.setItem('token', data.token);
-        window.location = '/'; // go to dashboard
+      if (response.ok && result.token) {
+        // Success! Store token and go to dashboard
+        localStorage.setItem('token', result.token);
+        navigate('/');
       } else {
-        // Login failed - show error message
-        setError(data.message || 'Login failed');
+        setError(result.message || 'Login failed');
       }
     } catch (err) {
+      console.error('Login error:', err);
       setError('Network error. Please try again.');
     } finally {
-      setLoading(false); // stop loading
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card fade-in">
-        <h2>🌱 Welcome Back!</h2>
+    <div className="container fade-in">
+      <h2>🔐 Login</h2>
 
-        {/* Show error message if there is one */}
-        {error && <div className="alert alert-error">{error}</div>}
+      {error && <div className="alert alert-error">{error}</div>}
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Email Address</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)} // update email when user types
-              required
-              placeholder="Enter your email"
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)} // update password when user types
-              required
-              placeholder="Enter your password"
-            />
-          </div>
-
-          <button type="submit" className="button" disabled={loading} style={{ width: '100%' }}>
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
-
-        <div className="auth-link">
-          Don't have an account? <Link to="/register">Register here</Link>
+      <form onSubmit={handleSubmit} className="form">
+        <div className="form-group">
+          <label>Email *</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            placeholder="Enter your email"
+          />
         </div>
+
+        <div className="form-group">
+          <label>Password *</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            placeholder="Enter your password"
+          />
+        </div>
+
+        {/* SUBMIT BUTTON */}
+        <button type="submit" className="button" disabled={submitting}>
+          {submitting ? 'Logging in...' : '✓ Login'}
+        </button>
+      </form>
+
+      <div style={{ marginTop: 12 }}>
+        Don't have an account? <NavLink to="/register">Register here</NavLink>
       </div>
     </div>
   );
