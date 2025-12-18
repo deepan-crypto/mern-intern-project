@@ -1,25 +1,34 @@
-// PLANT DETAILS PAGE (Product.jsx)
-// This shows detailed information about a single plant
-// Users can water, fertilize, edit, or delete the plant here
+// PLANT DETAILS PAGE
+// This page shows full details for a single plant and its activity history
 import React, { useEffect, useState } from 'react';
-import { useParams, useOutletContext, NavLink, useNavigate } from 'react-router-dom';
+import { useParams, useOutletContext, useNavigate, NavLink } from 'react-router-dom';
 
 export default function Product() {
-  const { id } = useParams(); // get plant ID from URL
-  const { token } = useOutletContext();
+  const { id } = useParams();
+  const { plants, token } = useOutletContext();
   const navigate = useNavigate();
 
-  // Store plant data and activity history in state
+  // State for plant data and activities
   const [plant, setPlant] = useState(null);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState('');
 
-  // Fetch plant details when page loads
+  // Fetch plant details and its activity history
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      setLoading(false);
+      return;
+    }
 
-    // Get plant data from backend
+    // Try to find plant in the local list first
+    const localPlant = plants.find(p => p._id === id);
+    if (localPlant) {
+      setPlant(localPlant);
+    }
+
+    // Also fetch from backend to get latest data
     fetch(`http://localhost:5000/api/plants/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -30,119 +39,72 @@ export default function Product() {
       })
       .catch(err => {
         console.error('Error fetching plant:', err);
+        setError('Failed to load plant details');
         setLoading(false);
       });
+  }, [id, plants, token]);
 
-    // Get activity history for this plant
+  // Fetch activity history for this plant
+  useEffect(() => {
+    if (!token || !plant) return;
+
     fetch(`http://localhost:5000/api/activities?plantId=${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(data => {
-        // Make sure data is an array before setting activities
-        if (Array.isArray(data)) {
-          setActivities(data);
-        } else {
-          console.error('Activities data is not an array:', data);
-          setActivities([]);
-        }
+        setActivities(Array.isArray(data) ? data : []);
       })
       .catch(err => {
         console.error('Error fetching activities:', err);
-        setActivities([]); // ensure it's an array on error
+        setActivities([]);
       });
-  }, [id, token]);
+  }, [id, plant, token]);
 
-  // WATER NOW - Mark plant as watered
-  const handleWaterNow = async () => {
-    setActionLoading(true);
-    try {
-      const response = await fetch(`http://localhost:5000/api/plants/${id}/water`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Update plant data with new watering info
-        setPlant(data);
-
-        // Reload activities to show the new "watered" entry
-        const actRes = await fetch(`http://localhost:5000/api/activities?plantId=${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const actData = await actRes.json();
-        // Safety check: make sure actData is an array
-        if (Array.isArray(actData)) {
-          setActivities(actData);
-        } else {
-          console.error('Activities reload failed, not an array');
-        }
-
-        alert('✓ Plant watered successfully!');
-      }
-    } catch (err) {
-      alert('Error watering plant. Please try again.');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  // FERTILIZE NOW - Mark plant as fertilized
-  const handleFertilizeNow = async () => {
-    setActionLoading(true);
-    try {
-      const response = await fetch(`http://localhost:5000/api/plants/${id}/fertilize`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Update plant data with new fertilizing info
-        setPlant(data);
-
-        // Reload activities
-        const actRes = await fetch(`http://localhost:5000/api/activities?plantId=${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const actData = await actRes.json();
-        // Safety check: make sure actData is an array
-        if (Array.isArray(actData)) {
-          setActivities(actData);
-        } else {
-          console.error('Activities reload failed, not an array');
-        }
-
-        alert('✓ Plant fertilized successfully!');
-      }
-    } catch (err) {
-      alert('Error fertilizing plant. Please try again.');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  // DELETE PLANT
+  // Handle plant deletion with confirmation
   const handleDelete = async () => {
-    if (!confirm(`Are you sure you want to delete "${plant.name}"? This cannot be undone.`)) {
+    if (!token) return;
+    if (!window.confirm('Are you sure you want to delete this plant? This action cannot be undone.')) {
       return;
     }
 
+    setDeleting(true);
+    setError('');
+
     try {
-      await fetch(`http://localhost:5000/api/plants/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/plants/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
-      navigate('/'); // go back to dashboard
+
+      if (response.ok) {
+        // Success! Go back to dashboard
+        navigate('/');
+      } else {
+        const data = await response.json();
+        setError(data.message || 'Failed to delete plant');
+      }
     } catch (err) {
-      alert('Error deleting plant. Please try again.');
+      console.error('Delete error:', err);
+      setError('Network error. Please try again.');
+    } finally {
+      setDeleting(false);
     }
   };
 
-  // Show loading message while fetching data
+  // Show login prompt if not authenticated
+  if (!token) {
+    return (
+      <div className="container fade-in">
+        <h2>🌱 Plant Details</h2>
+        <div className="alert alert-info">
+          Please <NavLink to="/login">login</NavLink> to view plant details.
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading spinner
   if (loading) {
     return (
       <div className="container">
@@ -154,11 +116,49 @@ export default function Product() {
   // Show error if plant not found
   if (!plant) {
     return (
-      <div className="container">
-        <div className="card">
-          <h2>Plant not found</h2>
-          <p>This plant may have been deleted.</p>
-          <NavLink to="/" className="button">Go to Dashboard</NavLink>
+      <div className="container fade-in">
+        <h2>🌱 Plant Details</h2>
+        <div className="alert alert-error">
+          Plant not found. <NavLink to="/">Go back to dashboard</NavLink>
+        </div>
+      </div>
+    );
+  }
+
+  // Function to filter activities by type
+  const wateredActivities = activities.filter(a => a.type === 'watered');
+  const fertilizedActivities = activities.filter(a => a.type === 'fertilized');
+
+  // Check if plant is overdue
+  const now = new Date();
+  const wateringOverdue = plant.nextWateringDate && new Date(plant.nextWateringDate) < now;
+  const fertilizingOverdue = plant.nextFertilizingDate && new Date(plant.nextFertilizingDate) < now;
+
+  return (
+    <div className="container fade-in">
+      <h2>🌿 {plant.name}</h2>
+
+      {error && <div className="alert alert-error">{error}</div>}
+
+      {/* PLANT IMAGE */}
+      {plant.image && (
+        <img src={plant.image} alt={plant.name} className="plant-detail-image" />
+      )}
+
+      {/* PLANT BASIC INFO GRID */}
+      <div className="detail-grid">
+        <div className="detail-item">
+          <div className="detail-label">Species</div>
+          <div className="detail-value">{plant.species || '—'}</div>
+        </div>
+
+        <div className="detail-item">
+          <div className="detail-label">Watering Frequency</div>
+          <div className="detail-value">{plant.wateringFrequencyDays} days</div>
+        </div>
+
+        <div className="detail-item">
+          <div className="detail-label">Fertilizing Frequency</div>
         </div>
       </div>
     );
