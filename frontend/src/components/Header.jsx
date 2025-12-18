@@ -15,22 +15,50 @@ export default function Header() {
 
   return (
     <header className="header">
-      <h1>🌿 Plant Tracker</h1>
-      <nav>
-        {/* These links will be highlighted when active */}
-        <NavLink to="/" className="navlink">Dashboard</NavLink>
-        <NavLink to="/add" className="navlink">Add Plant</NavLink>
-        <NavLink to="/activities" className="navlink">Activities</NavLink>
-
-        {/* Show Login/Register if not logged in */}
-        {!token && <NavLink to="/login" className="navlink">Login</NavLink>}
-        {!token && <NavLink to="/register" className="navlink">Register</NavLink>}
-
-        {/* Show Logout button if logged in */}
+      <h1 className="logo">🌿 Plant Tracker</h1>
+      <nav className="nav-menu">
+        {/* Main Pages (visible when logged in) */}
         {token && (
-          <button onClick={handleLogout} className="button button-secondary" style={{ padding: '0.5rem 1rem' }}>
+          <>
+            <NavLink to="/" className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}>
+              Dashboard
+            </NavLink>
+            <NavLink to="/add" className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}>
+              Add Plant
+            </NavLink>
+            <NavLink to="/activities" className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}>
+              Activities
+            </NavLink>
+            <NavLink to="/product" className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}>
+              Product
+            </NavLink>
+            <NavLink to="/edit" className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}>
+              Edit Plant
+            </NavLink>
+          </>
+        )}
+
+        {/* Auth Pages (visible when not logged in) */}
+        {!token && (
+          <>
+            <NavLink to="/login" className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}>
+              Login
+            </NavLink>
+            <NavLink to="/register" className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}>
+              Register
+            </NavLink>
+          </>
+        )}
+
+        {/* Logout (visible when logged in) */}
+        {token && (
+          <a 
+            onClick={handleLogout} 
+            className="navlink logout-link"
+            style={{ cursor: 'pointer' }}
+          >
             Logout
-          </button>
+          </a>
         )}
       </nav>
     </header>
