@@ -1,0 +1,36 @@
+/* Main Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Page Titles */
+h2 {
+  color: var(--primary-green);
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+h3 {
+  color: var(--primary-green);
+  font-size: 1.5rem;
+  margin: 1.5rem 0 1rem 0;
+  font-weight: 600;
+}
+
+/* Cards - Beautiful modern cards */
+.card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px var(--shadow-light);
+  transition: all 0.3s ease;
+  margin-bottom: 1.5rem;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px var(--shadow-medium);
+}

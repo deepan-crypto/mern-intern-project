@@ -346,6 +346,10 @@ button:active,
   background: linear-gradient(135deg, #e74c3c, #c0392b);
 }
 
+.button-danger:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);
+}
+
 .button-group {
   display: flex;
   gap: 8px;
@@ -417,17 +421,20 @@ button:active,
   font-weight: 600;
   color: var(--primary-green);
   text-transform: capitalize;
+  font-size: 1rem;
 }
 
 .activity-date {
   color: var(--text-light);
   font-size: 0.9rem;
+  margin-top: 0.4rem;
 }
 
 .activity-note {
   color: var(--text-light);
   font-size: 0.9rem;
   margin-top: 0.3rem;
+  font-style: italic;
 }
 
 /* Filter Section */
@@ -484,12 +491,22 @@ button:active,
   background: var(--bg-gradient-start);
   padding: 1.5rem;
   border-radius: 12px;
+  border-left: 4px solid var(--primary-green);
+  transition: all 0.3s ease;
+}
+
+.detail-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px var(--shadow-light);
 }
 
 .detail-label {
   color: var(--text-light);
   font-size: 0.9rem;
   margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
 }
 
 .detail-value {
