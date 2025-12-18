@@ -11,10 +11,14 @@ export default function Activity() {
   const [loading, setLoading] = useState(true);
   const [selectedPlant, setSelectedPlant] = useState('all'); // filter by plant
   const [selectedType, setSelectedType] = useState('all'); // filter by type
+  const [error, setError] = useState(null); // error message state
 
   // Load all activities when page loads
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      setLoading(false);
+      return;
+    }
 
     // Fetch all activities for this user
     fetch('http://localhost:5000/api/activities', {
@@ -22,19 +26,13 @@ export default function Activity() {
     })
       .then(res => res.json())
       .then(data => {
-        // Make sure data is an array before setting it
-        // If backend returns an error, it might be an object like { message: "error" }
-        if (Array.isArray(data)) {
-          setActivities(data);
-        } else {
-          console.error('Activities data is not an array:', data);
-          setActivities([]); // set empty array if error
-        }
+        setActivities(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(err => {
-        console.error('Error loading activities:', err);
-        setActivities([]); // make sure it's an array even on error
+        console.error('Error fetching activities:', err);
+        setError('Cannot connect to backend server. Make sure it is running on port 5000. (cd backend && npm run dev)');
+        setActivities([]);
         setLoading(false);
       });
   }, [token]);
@@ -105,6 +103,13 @@ export default function Activity() {
           </div>
         </div>
       </div>
+
+      {/* ERROR MESSAGE */}
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
 
       {/* ACTIVITY LIST */}
       {filteredActivities.length === 0 ? (
