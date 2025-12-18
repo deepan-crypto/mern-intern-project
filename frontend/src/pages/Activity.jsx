@@ -22,16 +22,29 @@ export default function Activity() {
 
     // Fetch all activities for this user
     fetch('http://localhost:5000/api/activities', {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
     })
-      .then(res => res.json())
+      .then(res => {
+        if (res.status === 401) {
+          // Token invalid - log user out
+          localStorage.removeItem('token');
+          setError('Your session has expired. Please login again.');
+          setLoading(false);
+          return null;
+        }
+        return res.json();
+      })
       .then(data => {
+        if (!data) return;
         setActivities(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(err => {
         console.error('Error fetching activities:', err);
-        setError('Cannot connect to backend server. Make sure it is running on port 5000. (cd backend && npm run dev)');
+        setError('Cannot connect to backend server. Make sure it is running on port 5000.');
         setActivities([]);
         setLoading(false);
       });

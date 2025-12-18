@@ -49,10 +49,21 @@ export default function Product() {
     if (!token || !plant) return;
 
     fetch(`http://localhost:5000/api/activities?plantId=${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
     })
-      .then(res => res.json())
+      .then(res => {
+        if (res.status === 401) {
+          // Token invalid - log user out
+          localStorage.removeItem('token');
+          return null;
+        }
+        return res.json();
+      })
       .then(data => {
+        if (!data) return;
         setActivities(Array.isArray(data) ? data : []);
       })
       .catch(err => {

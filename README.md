@@ -77,37 +77,29 @@ Then open http://localhost:5173 in your browser.
 
 ## Common Issues
 
+### "401 Unauthorized" Error
+- Your session token has expired or is invalid
+- Solution: Log out and log back in
+- The app will automatically log you out if the token is invalid
+
 ### "Cannot connect to backend server" Error
 - Make sure backend is running: `cd backend && npm run dev`
 - Backend must be on port 5000
 - Check that MongoDB is running
 
 ### "No routes matched location" Error
-- Make sure you're clicking the Edit button from the Plant Details page
-- Don't navigate directly to /edit without a plant ID
+- Make sure you're clicking links to navigate between pages
+- Don't manually type routes in the URL bar
+- Use the navbar to navigate
 
 ### Port 5000 Already in Use
 - Kill the process: `npx kill-port 5000`
 - Or change MONGO_URI/PORT in backend if needed
 
-## Features
-
-✅ User Authentication (Login/Register with JWT)
-✅ Add, Edit, Delete Plants
-✅ Track Watering & Fertilizing Schedules
-✅ Activity History with Filtering
-✅ Overdue Task Alerts
-✅ Plant Image Upload
-✅ Responsive Design
-
-## Pages
-
-- **Dashboard** - View all plants with stats
-- **Add Plant** - Create new plant tracker
-- **Plant Details** - View full plant info and history
-- **Edit Plant** - Update plant information
-- **Activities** - View and filter activity history
-- **Login/Register** - User authentication
+### Token Expires After Browser Close
+- Tokens are stored in localStorage and persist across sessions
+- If you experience 401 errors, try logging out and back in
+- Clear browser cache if issues persist
 
 ---
 

@@ -9,19 +9,41 @@ import Login from './pages/Login';
 import EditPlant from './pages/EditPlant';
 import Activities from './pages/Activity';
 
-// define routes
+// define routes - make sure all routes are properly configured
 const router = createBrowserRouter([
   {
     path: '/',
     element: <App />,
+    errorElement: <div className="container fade-in"><h2>Error</h2><p>Page not found</p></div>,
     children: [
-      { index: true, element: <Dashboard /> },
-      { path: 'product/:id', element: <Product /> },
-      { path: 'edit/:id', element: <EditPlant /> },
-      { path: 'add', element: <AddPlant /> },
-      { path: 'register', element: <Register /> },
-      { path: 'login', element: <Login /> },
-      { path: 'activities', element: <Activities /> }
+      { 
+        index: true, 
+        element: <Dashboard /> 
+      },
+      { 
+        path: 'product/:id', 
+        element: <Product /> 
+      },
+      { 
+        path: 'edit/:id', 
+        element: <EditPlant /> 
+      },
+      { 
+        path: 'add', 
+        element: <AddPlant /> 
+      },
+      { 
+        path: 'register', 
+        element: <Register /> 
+      },
+      { 
+        path: 'login', 
+        element: <Login /> 
+      },
+      { 
+        path: 'activities', 
+        element: <Activities /> 
+      }
     ]
   }
 ]);

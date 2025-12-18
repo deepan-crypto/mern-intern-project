@@ -1,22 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 
 // App fetches plants and gives them to pages using Outlet context
 export default function App() {
   const [plants, setPlants] = useState([]);
   const [token, setToken] = useState(localStorage.getItem('token') || null);
-  const [error, setError] = useState(null); // simple error message
-  const [backendError, setBackendError] = useState(false); // track backend connection
+  const [error, setError] = useState(null);
+  const [backendError, setBackendError] = useState(false);
+  const navigate = useNavigate();
 
+  // Check if token exists and is valid
   useEffect(() => {
-    // update token state if user logs in/out in other tabs
     const t = localStorage.getItem('token');
-    if (t !== token) setToken(t);
+    if (t !== token) {
+      setToken(t);
+    }
   }, []);
 
+  // Fetch plants when token changes
   useEffect(() => {
-    // fetch plants if we have a token, otherwise clear
     if (!token) {
       setPlants([]);
       setError(null);
@@ -25,10 +28,26 @@ export default function App() {
     }
 
     fetch('http://localhost:5000/api/plants', {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
     })
-      .then(res => res.json())
+      .then(res => {
+        // Handle 401 Unauthorized - token is invalid or expired
+        if (res.status === 401) {
+          console.warn('Token expired or invalid. Logging out.');
+          localStorage.removeItem('token');
+          setToken(null);
+          setPlants([]);
+          setError('Your session has expired. Please login again.');
+          return null;
+        }
+        return res.json();
+      })
       .then(data => {
+        if (!data) return;
+        
         // backend might return an object with message on error
         if (Array.isArray(data)) {
           setPlants(data);
@@ -59,6 +78,14 @@ export default function App() {
             Please make sure the backend is running: <code>cd backend && npm run dev</code>
           </div>
         )}
+        
+        {/* Show session expired error */}
+        {error && error.includes('session') && (
+          <div className="alert alert-error" style={{ marginBottom: '20px' }}>
+            <strong>Session Expired:</strong> {error}
+          </div>
+        )}
+        
         <Outlet context={{ plants, setPlants, token, error }} />
       </div>
     </div>

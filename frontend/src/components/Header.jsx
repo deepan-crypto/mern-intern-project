@@ -1,11 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 
 // HEADER COMPONENT
 // This shows the navigation bar at the top of every page
 export default function Header() {
-  // Check if user is logged in by looking for token in browser storage
-  const token = localStorage.getItem('token');
+  const [token, setToken] = useState(localStorage.getItem('token'));
+
+  // Listen for storage changes (when token is updated in another tab)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setToken(localStorage.getItem('token'));
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Logout function - removes token and reloads page
   const handleLogout = () => {
