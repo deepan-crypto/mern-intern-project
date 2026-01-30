@@ -1,0 +1,41 @@
+/* Table Styling (for compatibility) */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px var(--shadow-light);
+}
+
+.table th {
+  background: #f0f0f0;
+  font-weight: bold;
+  text-align: left;
+  padding: 12px;
+  border: 1px solid #ddd;
+}
+
+.table td {
+  padding: 12px;
+  border: 1px solid #ddd;
+}
+
+.table tr:hover {
+  background: #f9f9f9;
+}
+
+.table tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.table a {
+  color: var(--primary-green);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.table a:hover {
+  text-decoration: underline;
+}
