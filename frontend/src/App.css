@@ -1,0 +1,13 @@
+/* Import all modular stylesheets */
+@import './Styles/variables.css';
+@import './Styles/Header.css';
+@import './Styles/Container.css';
+@import './Styles/Dashboard.css';
+@import './Styles/Forms.css';
+@import './Styles/Buttons.css';
+@import './Styles/Auth.css';
+@import './Styles/Product.css';
+@import './Styles/Activity.css';
+@import './Styles/Table.css';
+@import './Styles/Utilities.css';
+@import './Styles/EditPlant.css';
